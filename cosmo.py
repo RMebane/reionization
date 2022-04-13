@@ -96,6 +96,22 @@ def delCrit0(z):
 	else:
 		print('HEY THE INPUT OF z IS WEIRD')
 
+def delta_c(z):
+    a = 18.0 * np.pi * np.pi
+    b = 82.0 * (omegaZ(z) - 1.0)
+    c = 39.0 * (omegaZ(z) - 1.0)**2.0
+    return a + b - c;
+
+def M_vir(T, z):
+    num = 1.0e8 * T**(3.0/2.0)
+    a = 1.98e4
+    b = 1.22/0.6
+    
+    c = (OMEGA0 /omegaZ(z) * delta_c(z) / (18.0 * np.pi * np.pi))**(1.0/3.0)
+    e = (1.0 + z) / 10.0 * HPARAM**(2.0/3.0)
+    
+    return num / ((a*b*c*e)**(3.0/2.0))
+
 # eq 7 in tramonte et al 2017
 def linDen_from_realDen(dm, z):
 	dc = delCrit0(z=z) / growthFac(z=z)

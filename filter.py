@@ -12,6 +12,36 @@ def get_nrec(den, dt, ion_frac = 1.0):
     ion_density = den * OMEGAB / OMEGA0 * 0.76 / PROTON_MASS * ion_frac # number density of ions
     return ion_density * ALPHAB * dt
 
+def fstar_test(z, M):
+    return 0.1
+
+def fstar_21cmFAST(z, M):
+    return 0.05 * (M / 1.0e10)**0.5
+
+def fesc_21cmFAST(z, M):
+    return 0.1 * (M / 1.0e10)**(-0.5)
+
+def fesc_test(z, M):
+    return 0.1
+
+def Nion_test(z, M):
+    return 5.0e3
+
+def Mmin_test(z):
+    return 1.0e8 * MSUN
+
+def Mmin_ACT(z):
+    return M_vir(1.0e4, z) * MSUN
+
+def fcoll_integrand(M, z, regionMass, d, fstar, fesc, Nion):
+    nm = nm_press_cond(M / MSUN, z, regionMass / MSUN, d)
+    return nm / MSUN / 3.0e24**3 * fstar(z, M) * OMEGAB / OMEGA0 * Nion(z, M) * fesc(z, M) * M
+
+# actual fcoll, without SF params
+def fcoll_true_integrand(M, z, regionMass, d):
+    nm = nm_press_cond(M / MSUN, z, regionMass / MSUN, d)
+    return nm / MSUN / 3.0e24**3 * M
+
 def fcoll_ion_s(z, regionMass, d, rho, fstar=fstar_21cmFAST, fesc=fesc_21cmFAST, Nion=Nion_test, Mmin=Mmin_ACT, debug_flag=1):
 	# set the max integration mass equal to the region mass (can't have a halo more massive than the region!)
 	Mmax = regionMass
