@@ -106,7 +106,7 @@ def spherical_kernel(r):
 
 # no .dat in output!
 # box_len in Mpc
-def filter_box(z, zprev, den, box_len, output_prefix, Nrec = [], logR = False, max_R = 50, min_R = -1, NR=50, imax=-1, jmax=-1, kmax=-1, interp_file="", avg_rec=0.0, save_steps=False, save_full_box=False, boost=1.0):
+def filter_box(z, zprev, den, box_len, output_prefix, Nrec = [], logR = True, max_R = 50, min_R = -1, NR=25, imax=-1, jmax=-1, kmax=-1, interp_file="", avg_rec=0.0, save_steps=False, save_full_box=False, boost=1.0):
     #unless min filtering scale set, set it to the cell size
     if(min_R < 0):
         min_R = box_len / len(den)
