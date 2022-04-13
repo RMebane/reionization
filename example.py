@@ -1,4 +1,5 @@
 from filter import *
+from data import *
 
 # example script for filtering a 500 Mpc, 256^3 box with 24 snapshots
 

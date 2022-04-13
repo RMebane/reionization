@@ -1,4 +1,5 @@
 from cosmo import *
+from data import *
 
 def maxone(a):
     if(a > 1.0):
