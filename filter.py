@@ -63,6 +63,13 @@ def fcoll_ion_s(z, regionMass, d, rho, fstar=fstar_21cmFAST, fesc=fesc_21cmFAST,
 		return den
 	return res/rho
 
+# returns distance from center in number of cells of pos in a cube of side length s
+def distance_from_center(s, pos):
+    dx = abs(pos[0] - s/2.)
+    dy = abs(pos[1] - s/2.)
+    dz = abs(pos[2] - s/2.)
+    return np.sqrt(dx**2.0 + dy**2.0 + dz**2.0)
+
 # returns a spherical kernel of cell radius R to convolve with a density field
 def spherical_kernel(r):
     R = int(np.ceil(r))
