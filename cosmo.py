@@ -151,6 +151,27 @@ def time_sep(z1, z2):
     diff = abs(cosmicTime(z1) - cosmicTime(z2));
     return diff / (HPARAM * 100 / KM_MPC)
 
+def realDen_from_linDen(linDen, name='/data/groups/comp-astro/rmebane/realDen_from_linDen_splrep_interp.npy', **kwargs):
+
+    # read in interp file
+    tckD = np.load(name, allow_pickle=True)
+
+    if type(linDen) == np.ndarray:
+        ans = np.zeros(len(linDen))
+        for i in range(len(linDen)):
+            if linDen[i] >= 1.5874:
+                ans[i] = 18 * m.pi**2
+            else:
+                ans[i] = interpolate.splev(linDen[i], tckD)
+        return ans
+
+    else:
+        if linDen >= 1.5874:
+            return 18 * m.pi**2
+        else:
+            ans = interpolate.splev(linDen, tckD).item()
+            return ans
+
 
 def nm_press_cond(tM, z, regionMass, d):
     #   returns the conditional press schechter halo mass function as dn / dm
