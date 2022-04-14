@@ -25,9 +25,48 @@ def maxone(a):
 # density in CGS
 # dt in seconds
 # returns in total number of recombinations per baryon
+# This assumes a mean density, you should probably instead integrate over the subgrid density distribution below
 def get_nrec(den, dt, ion_frac = 1.0):
     ion_density = den * OMEGAB / OMEGA0 * 0.76 / PROTON_MASS * ion_frac # number density of ions
     return ion_density * ALPHAB * dt
+
+# Code for integrating over the subgrid density distribution to find nrec
+# See Sobacchi and Mesinger 2014
+def density_pdf_Cnorm(D, z, Dcell, A, C):
+    Beta = 2.5
+    zeff = (1.0 + z) * Dcell**(1./3.) - 1.
+    d0 = 7.61 / (1.0 + zeff)
+    expon = -1. * (D**(-2./3.) - C)**2.0 / (2.0 * (2. * d0 / 3.)**2.0)
+    return A * np.exp(expon) * D**(-1. * Beta)
+
+def expectation_int_Cnorm(D, z, Dcell, A, C):
+    return D * density_pdf_Cnorm(D, z, Dcell, A, C)
+
+def density_expectation_Cnorm(C, z, Dcell):
+    A = 1. / integrate.quad(density_pdf_Cnorm, 0, np.inf, args=(z, Dcell, 1.0, C))[0]
+    return Dcell - integrate.quad(expectation_int_Cnorm, 0, np.inf, args=(z, Dcell, A, C))[0]
+
+def find_C(z, Dcell):
+    return optimize.fsolve(density_expectation_Cnorm, Dcell**(-2./3.), args=(z, Dcell))
+
+def density_pdf(D, z, Dcell):
+    C = find_C(z, Dcell)
+    A = 1. / integrate.quad(density_pdf_Cnorm, 0, np.inf, args=(z, Dcell, 1.0, C))[0]
+    Beta = 2.5
+    zeff = (1.0 + z) * Dcell**(1./3.) - 1.
+    d0 = 7.61 / (1.0 + zeff)
+    expon = -1. * (D**(-2./3.) - C)**2.0 / (2.0 * (2. * d0 / 3.)**2.0)
+    return A * np.exp(expon) * D**(-1. * Beta)
+
+# Equation 13 in Sobacchi and Mesinger 2014 for dnrec/dt
+def dnrec_dt_integrand(D, z, Dcell, rho_mean = 72.55 * DENCGS):
+    a = 1.0 / (1.0 + z)
+    nH_mean = rho_mean * OMEGAB / OMEGA0 * 0.76 / PROTON_MASS / a**3
+    return density_pdf(D, z, Dcell) * D * nH_mean * ALPHAB
+
+# Dcell is big Delta overdensity
+def dnrec_dt(Dcell, z):
+    return integrate.quad(dnrec_dt_integrand, 0, np.inf, args=(z, Dcell))[0]
 
 def fstar_test(z, M):
     return 0.1
