@@ -118,6 +118,33 @@ def fcoll_ion_s(z, regionMass, d, rho, fstar=fstar_21cmFAST, fesc=fesc_21cmFAST,
 		return den
 	return res/rho
 
+def build_1d_interp_table(z, den, output, N=1000, rMass = 1.0e16*MSUN):
+    if(USE_CUPY):
+        rhomean = cupy.mean(den)
+        rhomax = cupy.max(den)
+        rhomin = cupy.min(den[cupy.nonzero(den)])
+        dmax = (rhomax - rhomean) / rhomean
+        dmin = (rhomin - rhomean) / rhomean
+        ds = cupy.linspace(linDen_from_realDen(dmin, z), linDen_from_realDen(dmax, z), N)
+        res = cupy.zeros(N)
+        rho_mean = cupy.mean(den) * MSUN /  3.0e21**3 * OMEGAB / OMEGA0
+    else:
+        rhomean = np.mean(den)
+        rhomax = np.max(den)
+        rhomin = np.min(den[np.nonzero(den)])
+        dmax = (rhomax - rhomean) / rhomean
+        dmin = (rhomin - rhomean) / rhomean
+        ds = np.linspace(linDen_from_realDen(dmin, z), linDen_from_realDen(dmax, z), N)
+        res = np.zeros(N)
+        rho_mean = np.mean(den) * MSUN /  3.0e21**3 * OMEGAB / OMEGA0
+    for i in range(0,N):
+        print(i)
+        res[i] = fcoll_ion_s(z, rMass, ds[i], rho_mean*ds[i] + rho_mean, debug_flag=1)
+    if(USE_CUPY):
+        cupy.savetxt(output, cupy.c_[ds, res])
+    else:
+        np.savetxt(output, np.c_[ds, res])
+
 # returns distance from center in number of cells of pos in a cube of side length s
 def distance_from_center(s, pos):
     dx = abs(pos[0] - s/2.)

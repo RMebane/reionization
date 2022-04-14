@@ -152,5 +152,35 @@ def time_sep(z1, z2):
     return diff / (HPARAM * 100 / KM_MPC)
 
 
+def nm_press_cond(tM, z, regionMass, d):
+    #   returns the conditional press schechter halo mass function as dn / dm
+    #   sigma(m) table given to me by Adam Trapp
+    sigm_table = np.load('/data/groups/comp-astro/rmebane/sigma0fM_interp.npy', allow_pickle=True)
+    sig = 10**interpolate.splev(np.log10(regionMass), sigm_table, der=0)
+    sig_M = 10**interpolate.splev(np.log10(tM), sigm_table, der=0)
+    if(tM > regionMass):
+        #print(tM)
+        x=1
+    sig_Mprime = np.sqrt(sig_M**2 - sig**2)
+
+    dlsdlM = interpolate.splev(np.log10(tM), sigm_table, der=1)
+    dlsdlMprime = sig_M**2 / sig_Mprime**2 * dlsdlM
+
+    dCritZprime = delCrit0(z=z) / growthFac(z=z) - d
+
+    tdn = np.log10(np.sqrt(2.0 / m.pi) * dCritZprime * abs(dlsdlMprime))
+    tdn += np.log10(np.exp(1)) * (-dCritZprime**2 / (2.0 * sig_Mprime**2))
+    tdn -= np.log10(tM * sig_Mprime)
+    tdn += np.log10(CRITDENMSOLMPC * om0hh)
+    # THIS LINE IS TO CONVERT TO AN EULERIAN DENSITY. I get fancy here. If you don't want to
+    # use my realDen_from_linDen function (and associated interp file), you can just multiply by (1 + d1 * growthFac(z=z)) instead
+    #if withVolChange:
+    realDen = realDen_from_linDen(linDen=d * growthFac(z=z))
+    #tdn += np.log10(1 + d * growthFac(z=z))
+    tdn += np.log10(1 + realDen)
+
+    return 10**tdn / tM
+
+
 
 
