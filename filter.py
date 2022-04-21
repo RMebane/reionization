@@ -172,7 +172,7 @@ def spherical_kernel(r):
 
 # no .dat in output!
 # box_len in Mpc
-def filter_box(z, zprev, den, box_len, output_prefix, Nrec = [], logR = True, max_R = 50, min_R = -1, NR=25, imax=-1, jmax=-1, kmax=-1, interp_file="", avg_rec=0.0, save_steps=False, save_full_box=False, boost=1.0):
+def filter_box(z, zprev, den, box_len, output_prefix, Nrec = [], logR = True, max_R = 50, min_R = -1, NR=25, imax=-1, jmax=-1, kmax=-1, interp_file="", avg_rec=0.0, save_steps=False, save_full_box=False, boost=1.0, cf = 1.0):
     #unless min filtering scale set, set it to the cell size
     if(min_R < 0):
         min_R = box_len / len(den)
@@ -272,7 +272,7 @@ def filter_box(z, zprev, den, box_len, output_prefix, Nrec = [], logR = True, ma
                         dena.append(den[i,j,k])
                     if(len(Nrec) != 0):
                         dt = time_sep(z, zprev)
-                        Nrec_new[i,j,k] = Nrec[i,j,k] + get_nrec(den[i,j,k] * DENCGS, dt, ion_frac=maxone(effs[i,j,k]))
+                        Nrec_new[i,j,k] = Nrec[i,j,k] + get_nrec(den[i,j,k] * DENCGS, dt, ion_frac=maxone(effs[i,j,k])) * cf
         if(save_steps==True):
             np.savetxt(output_prefix + "_r" + str(r*cell_size) + ".dat", np.c_[ia, ja, ka, iona, Ra, dena])
 
